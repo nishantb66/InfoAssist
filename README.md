@@ -98,6 +98,15 @@ This project uses the `all-MiniLM-L6-v2` model from SentenceTransformer. It is a
 - `templates/`: Directory for HTML templates.
 
 
+## Screenshots
+![image](https://github.com/user-attachments/assets/2e6aad97-1bc5-44a6-9ea4-7e1c66b0633f)
+![image](https://github.com/user-attachments/assets/739afe10-4a76-41ab-8473-3434042e83a9)
+![image](https://github.com/user-attachments/assets/0281af21-ae6f-4a64-9343-3eb038912e33)
+![image](https://github.com/user-attachments/assets/aad51362-7b51-494f-9f91-3217149b226e)
+
+- Video demonstration in the file section
+
+
 ## License
 
 This project is licensed under the MIT License.
