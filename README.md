@@ -1,12 +1,12 @@
 
-# NLP Chatbot Final
+# InfoAssist Bot
 
-This project is an NLP-based chatbot built using Flask. The chatbot is capable of answering questions based on a predefined dataset.
+This project is an NLP-Transformer based chatbot built using Flask. The chatbot is capable of answering questions based on a predefined dataset.
 
 ## Project Structure
 
 ```
-NLP chatbot Final/
+InfoAssist/
 ├── app.py
 ├── credentials.pkl
 ├── embeddings.pkl
@@ -60,8 +60,8 @@ This project uses the `all-MiniLM-L6-v2` model from SentenceTransformer. It is a
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/NLP-chatbot-Final.git
-   cd NLP-chatbot-Final
+   git clone https://github.com/nishantb66/InfoAssist.git
+   cd InfoAssist
    ```
 
 2. Install the required dependencies:
@@ -82,7 +82,7 @@ This project uses the `all-MiniLM-L6-v2` model from SentenceTransformer. It is a
    python app.py
    ```
 
-2. Access the chatbot interface by navigating to `http://127.0.0.1:8080` in your web browser.
+2. Access the chatbot interface by navigating to `http://127.0.0.1:8080` in your web browser or you can also host in a specific IP as its WSGI server ready.
 
 ## Files
 
@@ -97,9 +97,6 @@ This project uses the `all-MiniLM-L6-v2` model from SentenceTransformer. It is a
 - `static/`: Directory for static files like images and JavaScript.
 - `templates/`: Directory for HTML templates.
 
-## Notes
-
-- Make sure to update the `app.secret_key` in `app.py` to a more secure value before deploying the application.
 
 ## License
 
