@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <!-- <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}"> -->
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            margin: 0;
+        }
+
+        .admin-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease-in-out;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-container h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .admin-form input,
+        .admin-form textarea {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.6);
+            outline: none;
+        }
+
+        .admin-form input:focus,
+        .admin-form textarea:focus {
+            border-color: #007bff;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .admin-form button {
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .admin-form button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-button:hover {
+            background-color: darkred;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .contributors-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .contributors-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .contributors-popup {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            width: 100%;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .contributors-popup h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .contributors-popup p {
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="logout-button" id="logout-button">Logout</button>
+    <div class="admin-container">
+        <h1>Admin Panel</h1>
+        <form class="admin-form" id="admin-form">
+            <input type="text" id="new-question" placeholder="New Question" required>
+            <textarea id="new-answer" rows="4" placeholder="New Answer" required></textarea>
+            <button type="submit">Add Question</button>
+        </form>
+    </div>
+
+    <button class="contributors-button" onclick="togglePopup()">Contributors</button>
+    <div class="contributors-popup" id="contributors-popup">
+        <h2>Contributors</h2>
+        <p><strong>Nishant:</strong> Development nishantbaruah3@gmail.com</p>
+        <p><strong>Abhay:</strong> Deployment abhayrathore@gmail.com</p>
+
+    </div>
+
+    <script>
+        document.getElementById('admin-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const newQuestion = document.getElementById('new-question').value;
+            const newAnswer = document.getElementById('new-answer').value;
+
+            const response = await fetch('/add_question', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    question: newQuestion,
+                    answer: newAnswer
+                })
+            });
+
+            if (response.ok) {
+                alert('Question added successfully');
+                document.getElementById('admin-form').reset();
+            } else {
+                alert('Error adding question');
+            }
+        });
+
+        function togglePopup() {
+            var popup = document.getElementById('contributors-popup');
+            if (popup.style.display === 'none' || popup.style.display === '') {
+                popup.style.display = 'block';
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+
+        // Logout button event listener
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            const response = await fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                window.location.href = '/';
+            } else {
+                alert('Error logging out');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with InfoAssist Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #chatbot-container {
+            position: relative;
+            width: 90%;
+            max-width: 600px;
+            height: 70%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        #chatbot-container:hover {
+            transform: translateY(-2%);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #121010;
+            border-radius: 15px 15px 0 0;
+            margin-bottom: 10px;
+        }
+
+        .chat-header h1 {
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .chat-header h1 img {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            animation: fadeIn 0.5s ease-in-out;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-box::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #4A90E2;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .chat-box:hover::-webkit-scrollbar-thumb {
+            background: #357ABD;
+        }
+
+        .chat-form {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            margin-top: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-form textarea {
+            flex: 1;
+            resize: none;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            margin-right: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.6);
+            outline: none;
+        }
+
+        .chat-form textarea:focus {
+            border-color: #4A90E2;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .chat-form button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .chat-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .user-message,
+        .bot-message,
+        .feedback-message,
+        .similar-questions-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease-in-out;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            align-self: flex-end;
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, #f1f1f1, #e0e0e0);
+            align-self: flex-start;
+        }
+
+        .feedback-message p,
+        .similar-questions-message p {
+            margin: 0 0 10px 0;
+        }
+
+        .feedback-btn,
+        .similar-question-btn {
+            padding: 5px 10px;
+            margin: 5px 0;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            text-align: left;
+            transition: background-color 0.3s ease;
+        }
+
+        .feedback-btn:hover,
+        .similar-question-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .quit-message {
+            color: red;
+            text-align: center;
+        }
+
+        #admin-login {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #admin-login:hover {
+            background-color: #357ABD;
+        }
+
+        #login-popup,
+        #reset-popup,
+        #feedback-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        #login-popup form,
+        #reset-popup form,
+        #feedback-popup form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #login-popup input,
+        #reset-popup input,
+        #feedback-popup textarea {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        #login-popup button,
+        #reset-popup button,
+        #feedback-popup button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #login-popup button:hover,
+        #reset-popup button:hover,
+        #feedback-popup button:hover {
+            background-color: #0056b3;
+        }
+
+        #login-popup .close-btn,
+        #reset-popup .close-btn,
+        #feedback-popup .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #333;
+        }
+
+        #login-popup .close-btn:hover,
+        #reset-popup .close-btn:hover,
+        #feedback-popup .close-btn:hover {
+            color: #aaa;
+        }
+
+        #login-popup .form-buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .feedback-success {
+            color: green;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .feedback-btn-main {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .feedback-btn-main:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="admin-login">Login as Admin</button>
+    <div id="chatbot-container" class="chatbot">
+        <div class="chat-header">
+            <h1><img src="{{ url_for('static', filename='logo.png') }}" alt="Logo"> InfoAssist Bot</h1>
+        </div>
+        <div id="chat-box" class="chat-box"></div>
+        <form id="chat-form" class="chat-form">
+            <button type="button" id="clear-chat" style="margin-right: 10px;">Clear</button>
+            <textarea id="question" rows="1" placeholder="Ask your question here..."></textarea>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <!-- <button class="feedback-btn-main" id="give-feedback">Give Feedback</button> -->
+    <div id="login-popup">
+        <button class="close-btn" id="close-login-popup">&times;</button>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <div class="form-buttons">
+                <button type="submit">Login</button>
+                <button type="button" id="reset-credentials">Reset Credentials</button>
+            </div>
+        </form>
+    </div>
+    <div id="reset-popup">
+        <button class="close-btn" id="close-reset-popup">&times;</button>
+        <form id="reset-form">
+            <input type="password" id="old-password" placeholder="Old Password" required>
+            <input type="text" id="new-username" placeholder="New Username" required>
+            <input type="password" id="new-password" placeholder="New Password" required>
+            <button type="submit">Reset</button>
+        </form>
+    </div>
+    <div id="feedback-popup">
+        <button class="close-btn" id="close-feedback-popup">&times;</button>
+        <form id="feedback-form">
+            <textarea id="feedback-text" rows="4" placeholder="Enter your feedback here..." required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <p class="feedback-success" id="feedback-success" style="display: none;">Thank you for your feedback!</p>
+    </div>
+    <script src="{{ url_for('static', filename='chatbot.js') }}"></script>
+    <script>
+        document.getElementById('admin-login').addEventListener('click', () => {
+            document.getElementById('login-popup').style.display = 'block';
+        });
+
+        document.getElementById('close-login-popup').addEventListener('click', () => {
+            document.getElementById('login-popup').style.display = 'none';
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.href = '/admin';
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        // Add event listeners for reset credentials
+        document.getElementById('reset-credentials').addEventListener('click', () => {
+            document.getElementById('login-popup').style.display = 'none';
+            document.getElementById('reset-popup').style.display = 'block';
+        });
+
+        document.getElementById('close-reset-popup').addEventListener('click', () => {
+            document.getElementById('reset-popup').style.display = 'none';
+        });
+
+        document.getElementById('reset-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const oldPassword = document.getElementById('old-password').value;
+            const newUsername = document.getElementById('new-username').value;
+            const newPassword = document.getElementById('new-password').value;
+
+            const response = await fetch('/reset_credentials', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ oldPassword, newUsername, newPassword })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Credentials updated successfully');
+                document.getElementById('reset-popup').style.display = 'none';
+            } else {
+                alert('Failed to update credentials. Please check your old password.');
+            }
+        });
+
+        document.getElementById('clear-chat').addEventListener('click', () => {
+            document.getElementById('chat-box').innerHTML = '';
+            document.getElementById('question').disabled = false;
+        });
+
+        document.getElementById('chat-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const question = document.getElementById('question').value.trim();
+            if (question === '') return;
+
+            // Remove previous feedback and similar questions elements
+            removePreviousFeedback();
+
+            // Display user's question
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('user-message');
+            userMessage.textContent = `You: ${question}`;
+            document.getElementById('chat-box').appendChild(userMessage);
+
+            document.getElementById('question').value = '';
+
+            // Fetch answer from server
+            const response = await fetch('/get_answer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question })
+            });
+
+            const result = await response.json();
+
+            // Display bot's answer
+            const botMessage = document.createElement('div');
+            botMessage.classList.add('bot-message');
+            botMessage.innerHTML = `Bot: ${result.answer.replace(/\n/g, '<br>')}`;
+            document.getElementById('chat-box').appendChild(botMessage);
+
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+
+            if (!result.quit) {
+                // Ask for feedback
+                const feedbackMessage = document.createElement('div');
+                feedbackMessage.classList.add('feedback-message');
+                feedbackMessage.innerHTML = `
+            <p>Was this answer helpful?</p>
+            <button class="feedback-btn yes-btn">Yes</button>
+            <button class="feedback-btn no-btn">No</button>
+        `;
+                document.getElementById('chat-box').appendChild(feedbackMessage);
+
+                document.querySelector('.yes-btn').addEventListener('click', () => {
+                    document.getElementById('chat-box').removeChild(feedbackMessage);
+                });
+
+                document.querySelector('.no-btn').addEventListener('click', async () => {
+                    document.getElementById('chat-box').removeChild(feedbackMessage);
+
+                    // Display similar questions
+                    const similarQuestionsMessage = document.createElement('div');
+                    similarQuestionsMessage.classList.add('similar-questions-message');
+                    similarQuestionsMessage.innerHTML = `
+                <p>Select the correct question:</p>
+                ${result.similar_questions.map(q => `<button class="similar-question-btn">${q}</button>`).join('')}
+            `;
+                    document.getElementById('chat-box').appendChild(similarQuestionsMessage);
+
+                    // Handle selection of similar questions
+                    document.querySelectorAll('.similar-question-btn').forEach(btn => {
+                        btn.addEventListener('click', async (event) => {
+                            const selectedQuestion = event.target.textContent;
+                            document.getElementById('chat-box').removeChild(similarQuestionsMessage);
+
+                            // Fetch the answer for the selected question
+                            const selectedAnswerResponse = await fetch('/get_selected_answer', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ selected_question: selectedQuestion })
+                            });
+
+                            const selectedAnswerResult = await selectedAnswerResponse.json();
+
+                            // Display the selected answer
+                            const selectedAnswerMessage = document.createElement('div');
+                            selectedAnswerMessage.classList.add('bot-message');
+                            selectedAnswerMessage.innerHTML = `Bot: ${selectedAnswerResult.answer.replace(/\n/g, '<br>')}`;
+                            document.getElementById('chat-box').appendChild(selectedAnswerMessage);
+                        });
+                    });
+                });
+            }
+
+            // Check if quit
+            if (result.quit) {
+                document.getElementById('question').disabled = true;
+                const quitMessage = document.createElement('div');
+                quitMessage.classList.add('quit-message');
+                quitMessage.textContent = "You have ended the chat session.";
+                document.getElementById('chat-box').appendChild(quitMessage);
+            }
+
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+        });
+
+        function removePreviousFeedback() {
+            const feedbackElements = document.querySelectorAll('.feedback-message, .similar-questions-message');
+            feedbackElements.forEach(el => el.remove());
+        }
+
+    </script>
+</body>
+
+</html>
